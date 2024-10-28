@@ -288,6 +288,54 @@ def distanceTransform(image: np.ndarray, start_point: tuple) -> np.ndarray:
     result_image = np.where(object_mask == 255, dist_map_normalized, image)
     return result_image
 
+def houghTransform(image: np.ndarray) -> np.ndarray:
+
+    blur = cv2.GaussianBlur(image, (5, 5), 0)
+    edges = cv2.Canny(blur, 150, 200)
+    cv2.imshow("edges", edges)
+    angle = 360
+    height, width = edges.shape
+    max_dist = int(np.hypot(height, width))  # Максимальна відстань
+    accumulator = np.zeros((2 * max_dist, angle), dtype=np.uint64)  # Акумулятор (d, a)
+
+
+    for y in range(height):
+        for x in range(width):
+            if edges[y, x] > 0:  # Крайова точка
+                for alpha in range(angle):
+                    theta = math.radians(alpha)
+                    d = int(x * math.cos(theta) + y * math.sin(theta))
+                    accumulator[d + max_dist, alpha] += 1
+
+
+    threshold = 200  # Порогове значення для відбору сильних ліній
+    lines = []
+    for d in range(2 * max_dist):
+        for alpha in range(angle):
+            if accumulator[d, alpha] > threshold:
+                lines.append((d - max_dist, alpha))
+
+
+    color_image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    for d, alpha in lines:
+        theta = math.radians(alpha)
+        cos_theta, sin_theta = np.cos(theta), np.sin(theta)
+        x0, y0 = cos_theta * d, sin_theta * d
+
+
+        x1 = int(x0 + 1000 * (-sin_theta))
+        y1 = int(y0 + 1000 * cos_theta)
+        x2 = int(x0 - 1000 * (-sin_theta))
+        y2 = int(y0 - 1000 * cos_theta)
+
+        # Зберігаємо крайні точки
+        pt1 = (x1, y1)
+        pt2 = (x2, y2)
+
+
+        cv2.line(color_image, pt1, pt2, (0, 0, 255), 1)
+    cv2.imshow("Color", color_image)
+    return color_image
 
 
 

@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
 
-from func import getArea, showCentroidAndAxisAndEccentricity, VossEdgeTracing, getCurvature, distanceTransform
+from func import getArea, showCentroidAndAxisAndEccentricity, VossEdgeTracing, getCurvature, distanceTransform, houghTransform
 
 
 def convert_to_grayscale(image_path: str)-> np.ndarray | None:
     image: np.ndarray = cv2.imread(image_path)
 
     if image is None:
-        print("Ошибка: не удалось загрузить изображение.")
+        print("Помилка: не вийшло завантажити зображення.")
         return None
 
     res_image: np.ndarray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -49,12 +49,13 @@ def test(choose: int):
             curv = getCurvature(gray_image, VossEdgeTracing(gray_image, (356, 173), False), 50)
             cv2.imshow('Curv', curv)
 
-        elif choose == 5:  # Дистанційне перетворення
+        elif (choose == 5):
             distance_map = distanceTransform(gray_image, (500, 300))
-
             cv2.imshow('Distance Transformation for Object', distance_map)
 
-
+        elif (choose == 6):
+            lines_image = houghTransform(gray_image)
+            cv2.imshow('Detected Lines with Hough Transform', lines_image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
